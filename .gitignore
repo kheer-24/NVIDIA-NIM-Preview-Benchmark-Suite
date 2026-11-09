@@ -1,8 +1,7 @@
 # Environment files with sensitive API keys
 .env
 
-# Docs and results (kept local only)
-README.md
+# Results kept local only
 results.json
 
 # Python bytecode and caches
