@@ -1,0 +1,27 @@
+# Environment files with sensitive API keys
+.env
+
+# Docs and results (kept local only)
+README.md
+results.json
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/

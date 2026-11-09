@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NVIDIA NIM — Preview Models Benchmark</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0c1017;
+      --card: #131922;
+      --card-hover: #17202c;
+      --border: #212936;
+      --border-focus: #374457;
+      
+      /* Subtle Green Accents */
+      --green-50: #f0fdf4;
+      --green-400: #4ade80;
+      --green-500: #22c55e;
+      --green-600: #16a34a;
+      --green-700: #15803d;
+      --green-bg: rgba(34, 197, 94, 0.1);
+      --green-border: rgba(34, 197, 94, 0.3);
+
+      /* Typography Grayscale */
+      --text-1: #f8fafc;
+      --text-2: #cbd5e1;
+      --text-3: #94a3b8;
+      --text-4: #64748b;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      background-color: var(--bg);
+      color: var(--text-2);
+      line-height: 1.5;
+      padding: 32px 24px 80px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 980px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Top Navigation Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge-icon {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      color: var(--green-400);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.8px;
+      padding: 5px 10px;
+      border-radius: 6px;
+    }
+
+    .title h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-1);
+      letter-spacing: -0.3px;
+    }
+
+    .title p {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    .env-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-2);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .status-dot.active {
+      background: var(--green-400);
+      box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+    }
+    .status-dot.inactive {
+      background: #ef4444;
+    }
+
+    /* 4 Summary Cards */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      transition: border-color 0.15s ease;
+    }
+    .stat-card:hover {
+      border-color: var(--border-focus);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-4);
+    }
+
+    .stat-val {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-1);
+      font-family: monospace;
+    }
+    .stat-val.highlight {
+      color: var(--green-400);
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text-4);
+    }
+
+    /* Active Run Progress Banner */
+    .running-banner {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      border-radius: 8px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .banner-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pulse {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green-400);
+      animation: ripple 1.6s infinite ease-in-out;
+    }
+    @keyframes ripple {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    .banner-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-1);
+    }
+    .banner-sub {
+      font-size: 11px;
+      color: var(--green-400);
+    }
+
+    /* Controls Bar */
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+    }
+
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    .btn-start {
+      background: var(--green-600);
+      color: #fff;
+    }
+    .btn-start:hover {
+      background: var(--green-500);
+    }
+    .btn-start:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-stop {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+    .btn-stop:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+    .btn-stop:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-reset {
+      background: transparent;
+      color: var(--text-3);
+      border-color: var(--border);
+    }
+    .btn-reset:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-1);
+    }
+
+    .btn-export {
+      background: transparent;
+      color: var(--text-3);
+      border-color: var(--border);
+      padding: 8px 12px;
+    }
+    .btn-export:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-1);
+    }
+
+    /* Search & Filter Tabs */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tab {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text-4);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab:hover {
+      color: var(--text-2);
+      border-color: var(--border-focus);
+    }
+    .tab.active {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+      color: var(--green-400);
+      font-weight: 700;
+    }
+
+    .search-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 12px;
+      color: var(--text-1);
+      font-size: 12px;
+      width: 240px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-box:focus {
+      border-color: var(--green-500);
+    }
+
+    /* Table & Ranking List */
+    .list-wrapper {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .list-header {
+      display: grid;
+      grid-template-columns: 48px 240px 1fr 140px;
+      padding: 10px 18px;
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-4);
+    }
+
+    .model-row {
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s ease;
+    }
+    .model-row:last-child {
+      border-bottom: none;
+    }
+    .model-row:hover {
+      background: var(--card-hover);
+    }
+
+    .row-main {
+      display: grid;
+      grid-template-columns: 48px 240px 1fr 140px;
+      align-items: center;
+      padding: 12px 18px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .rank {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-4);
+      font-family: monospace;
+    }
+    .rank.gold {
+      color: var(--green-400);
+    }
+
+    .model-info {
+      overflow: hidden;
+      padding-right: 12px;
+    }
+    .model-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .model-sub {
+      font-size: 11px;
+      color: var(--text-4);
+      font-family: monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bar-col {
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+    }
+
+    .track {
+      width: 100%;
+      height: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green-700) 0%, var(--green-500) 100%);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      font-family: monospace;
+    }
+
+    .metrics-col {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .speed-badge {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green-400);
+      font-family: monospace;
+    }
+
+    .latency-badge {
+      font-size: 10px;
+      color: var(--text-3);
+      font-family: monospace;
+    }
+
+    .status-tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .status-tag.pending { background: rgba(255, 255, 255, 0.04); color: var(--text-4); }
+    .status-tag.error { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+    /* Expandable Inspection Drawer */
+    .row-drawer {
+      display: none;
+      padding: 12px 18px 16px 66px;
+      background: rgba(0, 0, 0, 0.2);
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .row-drawer.open {
+      display: block;
+    }
+
+    .drawer-grid {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 8px;
+      font-size: 11px;
+    }
+    .drawer-grid span strong {
+      color: var(--text-1);
+    }
+
+    .drawer-output {
+      background: #090d13;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--text-2);
+      white-space: pre-wrap;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-4);
+      padding-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .footer a {
+      color: var(--text-3);
+      text-decoration: none;
+    }
+    .footer a:hover {
+      color: var(--green-400);
+    }
+
+    @media (max-width: 768px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .list-header { display: none; }
+      .row-main { grid-template-columns: 36px 1fr 90px; gap: 8px; }
+      .bar-col { display: none; }
+      .search-box { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <span class="badge-icon">NVIDIA NIM</span>
+        <div class="title">
+          <h1>Preview Models Benchmark</h1>
+          <p>Speed, Latency and Cost Measurements for 45 Preview Models</p>
+        </div>
+      </div>
+
+      <div class="env-badge" id="env-badge">
+        <span id="env-dot" class="status-dot inactive"></span>
+        <span id="env-text">Checking .env</span>
+      </div>
+    </header>
+
+    <!-- 4 Stats Cards -->
+    <section class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Fastest Speed</div>
+        <div class="stat-val highlight" id="stat-fastest">--</div>
+        <div class="stat-sub">Tokens / Second</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Average TTFT</div>
+        <div class="stat-val" id="stat-ttft">--</div>
+        <div class="stat-sub">Time to first token</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Fastest Model</div>
+        <div class="stat-val highlight" id="stat-winner" style="font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">--</div>
+        <div class="stat-sub" id="stat-winner-ttft">Awaiting benchmark</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">NVIDIA Endpoint Cost</div>
+        <div class="stat-val highlight">$0.00</div>
+        <div class="stat-sub">Free Preview Tier</div>
+      </div>
+    </section>
+
+    <!-- Active Run Progress Banner -->
+    <div id="running-banner" class="running-banner" style="display: none;">
+      <div class="banner-left">
+        <span class="pulse"></span>
+        <div>
+          <div class="banner-text" id="banner-text">Benchmarking in progress</div>
+          <div class="banner-sub" id="banner-sub">Testing models sequentially. Progress saves incrementally.</div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span id="banner-count" style="font-size: 13px; font-weight: 700; color: #fff;">0 / 45 Done</span>
+        <button id="banner-stop-btn" class="btn btn-stop" style="padding: 5px 12px; font-size: 11px;">
+          Stop
+        </button>
+      </div>
+    </div>
+
+    <!-- Controls Bar -->
+    <section class="controls">
+      <div class="btn-group">
+        <!-- Start Button -->
+        <button id="btn-start" class="btn btn-start">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <span id="btn-start-label">Start Benchmark</span>
+        </button>
+
+        <!-- Stop Button -->
+        <button id="btn-stop" class="btn btn-stop" disabled>
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+          <span>Stop</span>
+        </button>
+
+        <!-- Reset Button -->
+        <button id="btn-reset" class="btn btn-reset">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Reset Results</span>
+        </button>
+      </div>
+
+      <div class="btn-group">
+        <button id="btn-csv" class="btn btn-export">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>CSV</span>
+        </button>
+        <button id="btn-json" class="btn btn-export">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2"/></svg>
+          <span>JSON</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Filters & Search -->
+    <section class="filter-bar">
+      <div class="tabs">
+        <button class="tab active" data-tab="all">All Models (45)</button>
+        <button class="tab" data-tab="completed">Completed (<span id="tab-cnt-ok">0</span>)</button>
+        <button class="tab" data-tab="pending">Pending (<span id="tab-cnt-pend">45</span>)</button>
+        <button class="tab" data-tab="error">Errors (<span id="tab-cnt-err">0</span>)</button>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px;">
+        <select id="sort-select" class="tab" style="padding:6px 10px; outline:none; cursor:pointer; background:var(--card); color:var(--text-2);">
+          <option value="tps">Sort: Speed (Tokens/s)</option>
+          <option value="ttft">Sort: TTFT (Lowest Latency)</option>
+        </select>
+        <input type="text" id="search" class="search-box" placeholder="Filter by name, provider or id...">
+      </div>
+    </section>
+
+    <!-- Rankings List -->
+    <main class="list-wrapper">
+      <div class="list-header">
+        <div>Rank</div>
+        <div>Model Name</div>
+        <div style="padding: 0 16px;">Speed (Tokens / Sec)</div>
+        <div style="text-align: right;">Metrics</div>
+      </div>
+
+      <div class="list-body" id="list-body">
+        <!-- Injected via JavaScript -->
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span>Official Catalog: <a href="https://build.nvidia.com/models?filters=nimType%3Anim_type_preview" target="_blank">build.nvidia.com</a></span>
+      <span>|</span>
+      <span>Endpoint: <code>integrate.api.nvidia.com/v1</code></span>
+      <span>|</span>
+      <span>Progress: <code>results.json</code></span>
+    </footer>
+
+  </div>
+
+  <script>
+    let models = [];
+    let results = [];
+    let currentTab = "all";
+    let sortBy = "tps";
+    let isRunning = false;
+
+    // Server status check (.env key & background runner)
+    async function checkStatus() {
+      try {
+        const res = await fetch("/api/status");
+        if (res.ok) {
+          const data = await res.json();
+          const dot = document.getElementById("env-dot");
+          const text = document.getElementById("env-text");
+          const startBtn = document.getElementById("btn-start");
+          const startLabel = document.getElementById("btn-start-label");
+          const stopBtn = document.getElementById("btn-stop");
+          const banner = document.getElementById("running-banner");
+
+          if (data.has_env_key) {
+            dot.className = "status-dot active";
+            text.textContent = `.env Key Active (${data.masked_key})`;
+          } else {
+            dot.className = "status-dot inactive";
+            text.textContent = "NVIDIA_API_KEY Missing in .env";
+          }
+
+          isRunning = data.is_running;
+
+          if (isRunning) {
+            banner.style.display = "flex";
+            const currentLabel = data.current_model || "Connecting...";
+            document.getElementById("banner-text").textContent = `Testing: ${currentLabel}`;
+            document.getElementById("banner-count").textContent = `${data.completed} / ${data.total} Done`;
+
+            startBtn.disabled = true;
+            startLabel.textContent = "Benchmarking...";
+            stopBtn.disabled = false;
+          } else {
+            banner.style.display = "none";
+            startBtn.disabled = false;
+            startLabel.textContent = data.completed > 0 ? "Resume Benchmark" : "Start Benchmark";
+            stopBtn.disabled = true;
+          }
+        }
+      } catch (e) {
+        console.error("Status error:", e);
+      }
+    }
+
+    // Load data from models.json & results.json
+    async function loadData() {
+      try {
+        const [mRes, rRes] = await Promise.all([
+          fetch("/models.json"),
+          fetch("/results.json")
+        ]);
+
+        if (mRes.ok) models = await mRes.json();
+        if (rRes.ok) results = await rRes.json();
+
+        render();
+      } catch (e) {
+        console.error("Load data error:", e);
+      }
+    }
+
+    // Render list and summary cards
+    function render() {
+      const resultsMap = new Map();
+      results.forEach(r => resultsMap.set(r.id, r));
+
+      const completed = [];
+      const pending = [];
+      const errors = [];
+
+      models.forEach(m => {
+        if (resultsMap.has(m.id)) {
+          const r = resultsMap.get(m.id);
+          if (r.status === "ok") {
+            completed.push({ ...m, ...r });
+          } else {
+            errors.push({ ...m, ...r });
+          }
+        } else {
+          pending.push({ ...m, status: "pending", tokens_per_second: 0 });
+        }
+      });
+
+      // Sort completed by selected metric
+      if (sortBy === "ttft") {
+        completed.sort((a, b) => (a.ttft_s || 999) - (b.ttft_s || 999));
+      } else {
+        completed.sort((a, b) => b.tokens_per_second - a.tokens_per_second);
+      }
+
+      // Counters
+      document.getElementById("tab-cnt-ok").textContent = completed.length;
+      document.getElementById("tab-cnt-pend").textContent = pending.length;
+      document.getElementById("tab-cnt-err").textContent = errors.length;
+
+      // Summary Cards
+      const maxTps = completed.length > 0 ? completed[0].tokens_per_second : 1;
+      document.getElementById("stat-fastest").textContent = completed.length > 0 ? `${completed[0].tokens_per_second.toFixed(1)}/s` : "--";
+
+      if (completed.length > 0) {
+        document.getElementById("stat-winner").textContent = completed[0].label;
+        const winnerTtftMs = completed[0].ttft_s ? Math.round(completed[0].ttft_s * 1000) : "--";
+        document.getElementById("stat-winner-ttft").innerHTML = `TTFT: <strong style="color:var(--text-1)">${winnerTtftMs} ms</strong> &bull; ${completed[0].tokens_per_second.toFixed(1)} tok/s`;
+        const avgTtft = completed.reduce((acc, c) => acc + (c.ttft_s || 0), 0) / completed.length;
+        document.getElementById("stat-ttft").textContent = `${Math.round(avgTtft * 1000)} ms`;
+      } else {
+        document.getElementById("stat-winner").textContent = "--";
+        document.getElementById("stat-winner-ttft").textContent = "Awaiting benchmark";
+        document.getElementById("stat-ttft").textContent = "--";
+      }
+
+      // Filter tabs
+      let displayItems = [];
+      if (currentTab === "all") displayItems = [...completed, ...errors, ...pending];
+      else if (currentTab === "completed") displayItems = completed;
+      else if (currentTab === "pending") displayItems = pending;
+      else if (currentTab === "error") displayItems = errors;
+
+      // Search filter
+      const searchVal = document.getElementById("search").value.toLowerCase().trim();
+      if (searchVal) {
+        displayItems = displayItems.filter(item =>
+          item.label.toLowerCase().includes(searchVal) ||
+          item.id.toLowerCase().includes(searchVal) ||
+          (item.provider && item.provider.toLowerCase().includes(searchVal))
+        );
+      }
+
+      const listBody = document.getElementById("list-body");
+      if (displayItems.length === 0) {
+        listBody.innerHTML = '<div style="text-align:center; padding:36px; color:var(--text-4); font-size:13px;">No models match the filter.</div>';
+        return;
+      }
+
+      listBody.innerHTML = displayItems.map((item, idx) => {
+        const isOk = item.status === "ok";
+        const isErr = item.status === "error";
+        const pct = isOk ? Math.max((item.tokens_per_second / maxTps) * 100, 4) : 0;
+        const safeId = item.id.replace(/[^a-zA-Z0-9]/g, '_');
+
+        return `
+          <div class="model-row">
+            <div class="row-main" onclick="toggleDrawer('${safeId}')">
+              <div class="rank ${idx === 0 && isOk ? 'gold' : ''}">${isOk ? '#' + (idx + 1) : '-'}</div>
+
+              <div class="model-info">
+                <div class="model-title" title="${item.label}">${item.label}</div>
+                <div class="model-sub" title="${item.id}">${item.id}</div>
+              </div>
+
+              <div class="bar-col">
+                <div class="track">
+                  ${isOk ? `
+                    <div class="fill" style="width: ${pct}%">
+                      ${pct > 20 ? item.tokens_per_second.toFixed(1) + ' tok/s' : ''}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+
+              <div class="metrics-col">
+                ${isOk ? `
+                  <div class="speed-badge">${item.tokens_per_second.toFixed(1)} tok/s</div>
+                  <div class="latency-badge">TTFT: ${item.ttft_s ? Math.round(item.ttft_s * 1000) + 'ms' : '--'}</div>
+                ` : isErr ? `
+                  <span class="status-tag error">Error</span>
+                ` : `
+                  <span class="status-tag pending">Pending</span>
+                `}
+              </div>
+            </div>
+
+            <!-- Drawer -->
+            <div id="drawer-${safeId}" class="row-drawer">
+              ${isOk ? `
+                <div class="drawer-grid">
+                  <span>Latency: <strong>${item.total_time_s}s</strong></span>
+                  <span>TTFT: <strong>${Math.round(item.ttft_s * 1000)}ms</strong></span>
+                  <span>Tokens: <strong>${item.tokens}</strong></span>
+                  <span>Cost: <strong style="color:var(--green-400)">$0.00 Free</strong></span>
+                </div>
+                <div class="drawer-output">${item.response_preview || '[Complete]'}</div>
+              ` : isErr ? `
+                <div class="drawer-output" style="color:#f87171">${item.error || 'Request error'}</div>
+              ` : `
+                <div style="font-size:11px; color:var(--text-4)">Queued. Click "Start Benchmark" above to test.</div>
+              `}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    window.toggleDrawer = function(safeId) {
+      const el = document.getElementById(`drawer-${safeId}`);
+      if (el) el.classList.toggle("open");
+    };
+
+    // Filter tabs
+    document.querySelectorAll(".tab").forEach(tabBtn => {
+      tabBtn.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+        tabBtn.classList.add("active");
+        currentTab = tabBtn.dataset.tab;
+        render();
+      });
+    });
+
+    // Sort selector
+    const sortSelect = document.getElementById("sort-select");
+    if (sortSelect) {
+      sortSelect.addEventListener("change", (e) => {
+        sortBy = e.target.value;
+        render();
+      });
+    }
+
+    // Search input
+    document.getElementById("search").addEventListener("input", render);
+
+    // Start benchmark action
+    document.getElementById("btn-start").addEventListener("click", async () => {
+      try {
+        const res = await fetch("/api/benchmark/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ restart: false })
+        });
+        const data = await res.json();
+        if (data.success) {
+          checkStatus();
+          loadData();
+        } else {
+          alert(data.message || "Failed to start benchmark");
+        }
+      } catch (e) {
+        alert("Server connection error: " + e.message);
+      }
+    });
+
+    // Stop benchmark action (Header button & Banner button)
+    async function triggerStop() {
+      try {
+        const res = await fetch("/api/benchmark/stop", { method: "POST" });
+        const data = await res.json();
+        if (data.success) {
+          checkStatus();
+        }
+      } catch (e) {
+        alert("Stop request failed: " + e.message);
+      }
+    }
+
+    document.getElementById("btn-stop").addEventListener("click", triggerStop);
+    document.getElementById("banner-stop-btn").addEventListener("click", triggerStop);
+
+    // Reset benchmark action
+    document.getElementById("btn-reset").addEventListener("click", async () => {
+      if (!confirm("Delete results.json and restart benchmark from scratch?")) return;
+      try {
+        const res = await fetch("/api/benchmark/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ restart: true })
+        });
+        const data = await res.json();
+        if (data.success) {
+          checkStatus();
+          loadData();
+        }
+      } catch (e) {
+        alert("Reset failed: " + e.message);
+      }
+    });
+
+    // CSV export
+    document.getElementById("btn-csv").addEventListener("click", () => {
+      if (!results || results.length === 0) return alert("No results to export yet.");
+      const headers = ["ID", "Label", "Tokens/Sec", "TTFT (s)", "Total Time (s)", "Tokens", "Status"];
+      const rows = results.map(r => [
+        `"${r.id}"`, `"${r.label}"`, r.tokens_per_second || 0, r.ttft_s || 0, r.total_time_s || 0, r.tokens || 0, r.status
+      ]);
+      const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+      downloadFile(csv, "nvidia_nim_benchmark.csv", "text/csv");
+    });
+
+    // JSON export
+    document.getElementById("btn-json").addEventListener("click", () => {
+      if (!results || results.length === 0) return alert("No results to export yet.");
+      downloadFile(JSON.stringify(results, null, 2), "nvidia_nim_benchmark.json", "application/json");
+    });
+
+    function downloadFile(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Initialize
+    loadData();
+    checkStatus();
+
+    // Auto-refresh every 2.5s while active
+    setInterval(() => {
+      checkStatus();
+      loadData();
+    }, 2500);
+  </script>
+</body>
+</html>

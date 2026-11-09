@@ -1,0 +1,132 @@
+/* static/styles.css - Modern Cyber Dark Theme */
+:root {
+  --nv-green: #76b900;
+  --nv-green-hover: #86cb00;
+  --nv-green-glow: rgba(118, 185, 0, 0.35);
+  --bg-dark: #0a0d12;
+  --bg-card: #121820;
+  --bg-card-hover: #19222e;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-green: rgba(118, 185, 0, 0.4);
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f141c;
+}
+::-webkit-scrollbar-thumb {
+  background: #253342;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nv-green);
+}
+
+.nv-badge {
+  background: rgba(118, 185, 0, 0.15);
+  color: #8ce400;
+  border: 1px solid rgba(118, 185, 0, 0.3);
+}
+
+.nv-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nv-card:hover {
+  border-color: rgba(118, 185, 0, 0.25);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #76b900 0%, #5d9100 100%);
+  color: #000;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px var(--nv-green-glow);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #86cb00 0%, #6da600 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(118, 185, 0, 0.5);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: #1a222c;
+  color: #e5e7eb;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #242f3d;
+  border-color: var(--border-green);
+  color: #fff;
+}
+
+.pill-filter {
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.825rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: #161e28;
+  border: 1px solid var(--border-color);
+  color: #9ca3af;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.pill-filter:hover {
+  background: #202b3a;
+  color: #fff;
+}
+
+.pill-filter.active {
+  background: rgba(118, 185, 0, 0.2);
+  border-color: var(--nv-green);
+  color: #9ee810;
+  font-weight: 600;
+}
+
+/* Streaming Terminal Glow */
+.terminal-window {
+  background: #080b0f;
+  border: 1px solid #1e2836;
+  font-family: "Cascadia Code", "Fira Code", Consolas, Monaco, monospace;
+}
+
+.tps-pulse {
+  animation: pulse-green 1.5s infinite;
+}
+
+@keyframes pulse-green {
+  0% { box-shadow: 0 0 0 0 rgba(118, 185, 0, 0.5); }
+  70% { box-shadow: 0 0 0 10px rgba(118, 185, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(118, 185, 0, 0); }
+}
+
+/* Glass effect modal */
+.modal-backdrop {
+  background: rgba(4, 7, 11, 0.75);
+  backdrop-filter: blur(6px);
+}
